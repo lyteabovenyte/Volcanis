@@ -1,0 +1,10 @@
+[package]
+name = "Volcanis"
+version = "0.1.0"
+edition = "2024"
+
+[dependencies]
+bytes = "0.5"
+tokio = { git = "https://github.com/tokio-rs/tokio", features = ["full"] }
+
+atoi = "0.3.2"
