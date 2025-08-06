@@ -1,13 +1,11 @@
+use std::{io::Cursor, num::TryFromIntError, string::FromUtf8Error};
 /// show how to idiomatically implement a wire protocol.
 /// The protocol is modeled using an intermediate representation, the Frame structure.
 /// Connection takes a TcpStream and exposes an API that sends and receives Frame values.
-use std::{
-    io::{self, Cursor},
-    num::TryFromIntError,
-    string::FromUtf8Error,
-};
+use tokio::io;
 
 use bytes::{Buf, Bytes};
+use std::convert::TryInto;
 
 pub(crate) enum Frame {
     Simple(String),
@@ -94,13 +92,15 @@ impl Frame {
                     }
                     Ok(Frame::Null)
                 } else {
-                    let len = get_decimal(src)?.try_into()?;
+                    let len: usize = get_decimal(src)?.try_into()?;
                     let n = len + 2;
 
                     if src.remaining() < n {
                         return Err(Error::Incomplete);
                     }
-                    let data = Bytes::copy_from_slice(&src.bytes()[..len]);
+                    let pos = src.position() as usize;
+                    let buf = src.get_ref();
+                    let data = Bytes::copy_from_slice(&buf[pos..pos + len]);
                     skip(src, n)?;
                     Ok(Frame::Bulk(data))
                 }
@@ -124,7 +124,9 @@ fn peek_u8(src: &mut Cursor<&[u8]>) -> Result<u8, Error> {
     if !src.has_remaining() {
         return Err(Error::Incomplete);
     }
-    Ok(src.bytes()[0])
+    let pos = src.position() as usize;
+    let buf = src.get_ref();
+    Ok(buf[pos])
 }
 
 fn get_u8(src: &mut Cursor<&[u8]>) -> Result<u8, Error> {
