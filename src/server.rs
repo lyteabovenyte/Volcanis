@@ -53,7 +53,7 @@ impl Server {
         let mut handler= Handler{
             kv: self.kv.clone(),
             connections: Connection::new(socket),
-            shutdown: self.notify_shutdown.subscribe(),
+            shutdown: Shutdown::new(self.notify_shutdown.subscribe()),
         };
 
         tokio::spawn(async move {

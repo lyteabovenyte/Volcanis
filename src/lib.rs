@@ -1,7 +1,7 @@
 pub mod client;
 
 mod cmd;
-use cmd::Command;
+use cmd::Command; // cmd module need to be implemented!
 
 mod conn;
 use conn::Connection;
