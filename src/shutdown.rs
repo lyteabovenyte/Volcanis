@@ -18,7 +18,7 @@ impl Shutdown {
     }
 
     pub(crate) async fn recv(&mut self) {
-        if self.shutdown {
+        if self.is_shutdown {
             return;
         }
 
